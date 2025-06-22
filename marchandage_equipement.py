@@ -1,181 +1,204 @@
 import tkinter as tk
 from tkinter import ttk
 
-# Prix de base pour chaque item
-prix_base_armes = {"Épée": 50, "Dague": 30, "Marteau de guerre": 70}
-prix_base_armures = {"Casque": 40, "Plastron": 100, "Jambières": 60}
-prix_base_bijoux = {"Amulette": 25, "Anneau": 20, "Bracelet": 30}
-
-# Modificateurs de matériaux
-materiaux = {
-    "Bronze": {"prix": 1.0, "bonus_CA": 0, "magie": False, "intangibles": False},
-    "Fer": {"prix": 1.2, "bonus_CA": 1, "magie": False, "intangibles": False},
-    "Acier": {"prix": 1.5, "bonus_CA": 2, "magie": True, "intangibles": False},
-    "Mithril": {"prix": 2.5, "bonus_CA": 3, "magie": True, "intangibles": True},
+# Données de base
+categories = {
+    "Armes": {"items": ["Épée", "Dague", "Marteau de guerre"], "has_material": True, "has_quality": True},
+    "Armes à distance": {"items": ["Arc", "Arbalète"], "has_material": True, "has_quality": True},
+    "Armures": {"items": ["Casque", "Plastron", "Jambières"], "has_material": True, "has_quality": True, "has_type": True},
+    "Bijoux": {"items": ["Anneau", "Amulette"], "has_material": True, "has_quality": True},
+    "Potions": {"items": ["Potion de soin", "Potion de mana"], "has_material": False, "has_quality": True},
+    "Animaux": {"items": ["Cheval", "Chien", "Faucon"], "has_material": False, "has_quality": True},
+    "Outils": {"items": ["Marteau de forgeron", "Pelle", "Pioche"], "has_material": True, "has_quality": True}
 }
 
-# Modificateurs de qualité
-qualites = {
-    "Standard": {"prix": 1.0, "bonus_CA": 0},
-    "Maître": {"prix": 1.5, "bonus_CA": 1},
-    "Chef-d'œuvre": {"prix": 2.0, "bonus_CA": 2},
+materials = {
+    "Bois": {"price_mod": 0.8, "effect": ""},
+    "Fer": {"price_mod": 1.0, "effect": ""},
+    "Acier": {"price_mod": 1.5, "effect": "Magique"},
+    "Argent": {"price_mod": 2.0, "effect": "Intangible"},
+    "Mythril": {"price_mod": 3.0, "effect": "Magique & Intangible"}
 }
 
-# Conversion monétaire
-def convertir_en_pieces(pc_total):
-    po = pc_total // 240
-    reste = pc_total % 240
+qualities = {
+    "Commun": 1.0,
+    "Bon": 1.5,
+    "Excellent": 2.0,
+    "Chef-d'œuvre": 3.0
+}
+
+base_prices = {
+    "Épée": 100, "Dague": 60, "Marteau de guerre": 120,
+    "Arc": 90, "Arbalète": 110,
+    "Casque": 50, "Plastron": 150, "Jambières": 100,
+    "Anneau": 200, "Amulette": 180,
+    "Potion de soin": 50, "Potion de mana": 70,
+    "Cheval": 500, "Chien": 150, "Faucon": 300,
+    "Marteau de forgeron": 80, "Pelle": 40, "Pioche": 60
+}
+
+ca_values = {"Casque": 1, "Plastron": 3, "Jambières": 2}
+
+# Fonctions de conversion
+
+def convert_price_to_text(total_cp):
+    po = total_cp // 240
+    reste = total_cp % 240
     pa = reste // 12
     pc = reste % 12
     return f"{po} PO, {pa} PA, {pc} PC"
 
-class ItemSelection:
-    def __init__(self, parent, item_type, liste_items, prix_base_dict, remove_callback):
-        self.frame = ttk.Frame(parent)
-        self.frame.pack(pady=2, fill="x")
+# Application
+class RPGShopApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Magasin de JDR")
+        self.root.geometry("800x700")
 
-        self.item_type = item_type
-        self.remove_callback = remove_callback
-        self.prix_base_dict = prix_base_dict
+        self.items = []
 
-        self.selected_item = tk.StringVar()
-        self.selected_mat = tk.StringVar()
-        self.selected_qual = tk.StringVar()
-        self.armure_type = tk.StringVar()
+        self.main_frame = tk.Frame(root)
+        self.main_frame.pack(fill="both", expand=True)
 
-        ttk.Combobox(self.frame, textvariable=self.selected_item, values=list(prix_base_dict.keys()), state="readonly", width=15).pack(side="left")
-        ttk.Combobox(self.frame, textvariable=self.selected_mat, values=list(materiaux.keys()), state="readonly", width=10).pack(side="left", padx=2)
-        ttk.Combobox(self.frame, textvariable=self.selected_qual, values=list(qualites.keys()), state="readonly", width=15).pack(side="left", padx=2)
+        self.canvas = tk.Canvas(self.main_frame)
+        self.scrollbar = tk.Scrollbar(self.main_frame, orient="vertical", command=self.canvas.yview)
+        self.scrollable_frame = tk.Frame(self.canvas)
 
-        if item_type == "Armure":
-            ttk.Combobox(self.frame, textvariable=self.armure_type, values=["Légère", "Lourde"], state="readonly", width=10).pack(side="left", padx=2)
+        self.scrollable_frame.bind(
+            "<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
+        )
 
-        ttk.Button(self.frame, text="❌", width=3, command=self.remove).pack(side="right", padx=5)
-
-    def remove(self):
-        self.frame.destroy()
-        self.remove_callback(self)
-
-    def get_resume(self):
-        if not (self.selected_item.get() and self.selected_mat.get() and self.selected_qual.get()):
-            return "", 0, 0
-
-        nom = self.selected_item.get()
-        mat = self.selected_mat.get()
-        qual = self.selected_qual.get()
-        prix_base = self.prix_base_dict.get(nom, 10)
-
-        prix_pc = int(prix_base * materiaux[mat]["prix"] * qualites[qual]["prix"] * 12)  # en PC (12 = 1 PA)
-        ca = 0
-        effets = []
-
-        if self.item_type == "Armure":
-            ca = 5 + materiaux[mat]["bonus_CA"] + qualites[qual]["bonus_CA"]
-            if self.armure_type.get() == "Lourde":
-                ca *= 2
-                prix_pc *= 2
-            if materiaux[mat]["magie"]:
-                effets.append("Protège des dégâts magiques")
-        elif self.item_type == "Arme":
-            if materiaux[mat]["intangibles"]:
-                effets.append("Peut toucher les créatures intangibles")
-
-        resume = f"{self.item_type}: {nom} ({mat}, {qual}) - Prix: {convertir_en_pieces(prix_pc)}"
-        if self.item_type == "Armure":
-            resume += f", CA: {ca}"
-        if effets:
-            resume += f" | Effets: {', '.join(effets)}"
-
-        return resume, prix_pc, ca
-
-class Application(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Achat d'Équipement - Jeu de Rôle")
-        self.geometry("950x700")
-
-        scroll_frame = ttk.Frame(self)
-        scroll_frame.pack(fill="both", expand=True)
-
-        self.canvas = tk.Canvas(scroll_frame)
-        self.scrollbar = ttk.Scrollbar(scroll_frame, orient="vertical", command=self.canvas.yview)
-        self.scrollable_frame = ttk.Frame(self.canvas)
-
-        self.scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
 
-        # Sections
-        self.arm_frame = ttk.LabelFrame(self.scrollable_frame, text="Armes")
-        self.arm_frame.pack(fill="x", padx=10, pady=5)
-        self.armor_frame = ttk.LabelFrame(self.scrollable_frame, text="Armures")
-        self.armor_frame.pack(fill="x", padx=10, pady=5)
-        self.bijoux_frame = ttk.LabelFrame(self.scrollable_frame, text="Bijoux")
-        self.bijoux_frame.pack(fill="x", padx=10, pady=5)
+        self.build_interface()
 
-        ttk.Button(self.arm_frame, text="Ajouter une arme", command=self.add_arme).pack(anchor="w", padx=5, pady=2)
-        ttk.Button(self.armor_frame, text="Ajouter une armure", command=self.add_armure).pack(anchor="w", padx=5, pady=2)
-        ttk.Button(self.bijoux_frame, text="Ajouter un bijou", command=self.add_bijou).pack(anchor="w", padx=5, pady=2)
+    def build_interface(self):
+        self.category_var = tk.StringVar()
+        self.item_var = tk.StringVar()
+        self.material_var = tk.StringVar()
+        self.quality_var = tk.StringVar()
+        self.armor_type_var = tk.StringVar()
 
-        self.armes = []
-        self.armures = []
-        self.bijoux = []
+        tk.Label(self.scrollable_frame, text="Catégorie").pack()
+        self.category_menu = ttk.Combobox(self.scrollable_frame, textvariable=self.category_var, values=list(categories.keys()))
+        self.category_menu.pack()
+        self.category_menu.bind("<<ComboboxSelected>>", self.update_items)
 
-        self.add_arme()
-        self.add_armure()
-        self.add_bijou()
+        tk.Label(self.scrollable_frame, text="Objet").pack()
+        self.item_menu = ttk.Combobox(self.scrollable_frame, textvariable=self.item_var)
+        self.item_menu.pack()
 
-        self.resume_frame = ttk.LabelFrame(self, text="Résumé et Total")
-        self.resume_frame.pack(fill="both", expand=False, padx=10, pady=10)
+        tk.Label(self.scrollable_frame, text="Matériau").pack()
+        self.material_menu = ttk.Combobox(self.scrollable_frame, textvariable=self.material_var, values=list(materials.keys()))
+        self.material_menu.pack()
 
-        ttk.Button(self, text="Mettre à jour le résumé", command=self.update_resume).pack(pady=5)
-        self.text = tk.Text(self.resume_frame, height=12)
-        self.text.pack(fill="both", expand=True)
+        tk.Label(self.scrollable_frame, text="Qualité").pack()
+        self.quality_menu = ttk.Combobox(self.scrollable_frame, textvariable=self.quality_var, values=list(qualities.keys()))
+        self.quality_menu.pack()
 
-    def add_arme(self):
-        item = ItemSelection(self.arm_frame, "Arme", prix_base_armes.keys(), prix_base_armes, self.remove_arme)
-        self.armes.append(item)
+        self.armor_type_menu = ttk.Combobox(self.scrollable_frame, textvariable=self.armor_type_var, values=["Légère", "Lourde"])
+        self.armor_type_menu.pack()
 
-    def add_armure(self):
-        item = ItemSelection(self.armor_frame, "Armure", prix_base_armures.keys(), prix_base_armures, self.remove_armure)
-        self.armures.append(item)
+        tk.Button(self.scrollable_frame, text="Ajouter", command=self.add_item).pack()
 
-    def add_bijou(self):
-        item = ItemSelection(self.bijoux_frame, "Bijou", prix_base_bijoux.keys(), prix_base_bijoux, self.remove_bijou)
-        self.bijoux.append(item)
+        self.summary_label = tk.Label(self.scrollable_frame, text="Résumé:")
+        self.summary_label.pack()
+        self.summary_text = tk.Text(self.scrollable_frame, height=20, width=80)
+        self.summary_text.pack()
 
-    def remove_arme(self, item):
-        if item in self.armes:
-            self.armes.remove(item)
+        self.total_label = tk.Label(self.scrollable_frame, text="Total: 0 PO, 0 PA, 0 PC")
+        self.total_label.pack()
 
-    def remove_armure(self, item):
-        if item in self.armures:
-            self.armures.remove(item)
+    def update_items(self, event):
+        cat = self.category_var.get()
+        self.item_menu["values"] = categories[cat]["items"]
+        if categories[cat].get("has_material"):
+            self.material_menu.configure(state="normal")
+        else:
+            self.material_menu.set("")
+            self.material_menu.configure(state="disabled")
 
-    def remove_bijou(self, item):
-        if item in self.bijoux:
-            self.bijoux.remove(item)
+        if categories[cat].get("has_type"):
+            self.armor_type_menu.configure(state="normal")
+        else:
+            self.armor_type_menu.set("")
+            self.armor_type_menu.configure(state="disabled")
 
-    def update_resume(self):
-        self.text.delete(1.0, tk.END)
-        total_pc = 0
-        ca_total = 0
+    def add_item(self):
+        cat = self.category_var.get()
+        item = self.item_var.get()
+        mat = self.material_var.get()
+        qual = self.quality_var.get()
+        armor_type = self.armor_type_var.get()
 
-        for item_list in [self.armes, self.armures, self.bijoux]:
-            for item in item_list:
-                resume, prix_pc, ca = item.get_resume()
-                if resume:
-                    self.text.insert(tk.END, resume + "\n")
-                    total_pc += prix_pc
-                    ca_total += ca
+        if not (cat and item and qual):
+            return
 
-        self.text.insert(tk.END, f"\nTotal: {convertir_en_pieces(total_pc)}\n")
-        if ca_total > 0:
-            self.text.insert(tk.END, f"CA Totale: {ca_total}\n")
+        base_price = base_prices.get(item, 100)
+        mat_mod = materials[mat]["price_mod"] if mat else 1.0
+        qual_mod = qualities[qual]
+        total_price = int(base_price * mat_mod * qual_mod * 12)  # en pièces de cuivre
 
-if __name__ == "__main__":
-    app = Application()
-    app.mainloop()
+        ca = 0
+        bonus = ""
+        effet = materials[mat]["effect"] if mat in materials else ""
+
+        if cat == "Armures":
+            ca = ca_values.get(item, 0)
+            if armor_type == "Lourde":
+                ca *= 2
+                total_price = int(total_price * 1.5)
+        
+        if qual == "Chef-d'œuvre":
+            if cat == "Armures":
+                bonus = "+5 Soc"
+            elif cat == "Armes":
+                bonus = "+5 CC"
+            elif cat == "Armes à distance":
+                bonus = "+5 CT"
+
+        entry = f"{item} ({cat}) - {qual}"
+        if mat:
+            entry += f", {mat}"
+        if armor_type:
+            entry += f" ({armor_type})"
+        if ca:
+            entry += f", CA: {ca}"
+        if effet:
+            entry += f", Effet: {effet}"
+        if bonus:
+            entry += f", Bonus: {bonus}"
+
+        entry += f" -> {convert_price_to_text(total_price)}"
+        self.items.append((entry, total_price))
+        self.refresh_summary()
+
+    def refresh_summary(self):
+        self.summary_text.delete("1.0", tk.END)
+        total_cp = 0
+        for idx, (text, price) in enumerate(self.items):
+            self.summary_text.insert(tk.END, f"[{idx}] {text}\n")
+            total_cp += price
+        self.total_label.config(text=f"Total: {convert_price_to_text(total_cp)}")
+
+        # Boutons de suppression
+        for widget in self.scrollable_frame.pack_slaves():
+            if isinstance(widget, tk.Button) and widget.cget("text").startswith("Supprimer"):
+                widget.destroy()
+
+        for idx in range(len(self.items)):
+            btn = tk.Button(self.scrollable_frame, text=f"Supprimer {idx}", command=lambda i=idx: self.remove_item(i))
+            btn.pack()
+
+    def remove_item(self, index):
+        if 0 <= index < len(self.items):
+            del self.items[index]
+            self.refresh_summary()
+
+root = tk.Tk()
+app = RPGShopApp(root)
+root.mainloop()
