@@ -8,8 +8,8 @@ categories = {
     "Armures": {"items": ["Casque", "Plastron", "Jambières", "Gants", "Bouclier", "Grand bouclier", "Bouclier bocle"], "has_material": True, "has_quality": True, "has_type": True},
     "Bijoux": {"items": ["Anneau", "Amulette", "Bracelet"], "has_material": True, "has_quality": True},
     "Potions": {"items": ["Potion de soin", "Poison mineur"], "has_material": False, "has_quality": True},
-    "Animaux": {"items": ["Boeuf", "Chat", "Cheval d'attelage", "Chevale de guerre léger", "Cheval de selle", "Chèvre", "Chien de chasse", "Chien de guerre", "Chien domestique", "Chien ratier", "Cochon", "Cochon de lait", "Destrier", "Faucon"], "has_material": False, "has_quality": False},
-    "Outils": {"items": ["Marteau de forgeron", "Pelle", "Pioche"], "has_material": True, "has_quality": True}
+    "Animaux": {"items": ["Boeuf", "Chat", "Cheval d'attelage", "Chevale de guerre léger", "Cheval de selle", "Chèvre", "Chien de chasse", "Chien de guerre", "Chien domestique", "Chien ratier", "Cochon", "Cochon de lait", "Destrier", "Faucon", "Mouton", "Oie", "Perroquet", "Pigeon voyageur", "Poulet", "Sanglier (monture)", "Singe (petit)", "Taureau", "Vache", "Veau"], "has_material": False, "has_quality": False},
+    "Outils": {"items": ["Bouilloire", "Briquet", "Jeu de carte", "Marmite", "paire de dés", "Tonneau 45L", "Tonneau 162L", "Chandelle 4H", "Lanterne", "Torche"], "has_material": True, "has_quality": True}
 }
 
 materials = {
@@ -18,12 +18,13 @@ materials = {
     "Acier ou Frêne": {"price_mod": 1.0, "C_armor_mod": 1.0, "effect": ""},
     "Platine ou Hérable": {"price_mod": 2.0, "C_armor_mod": 1.2, "effect": ""},
     "Argent ou Saule Blanc": {"price_mod": 3.0, "C_armor_mod": 1.5, "effect": "Magique & Intangible"},
-    "Mythril ou Bois de Lune": {"price_mod": 6.0, "C_armor_mod": 2.0, "effect": "Magique & Intangible"},
-    "Verre ou Bois de Vitréalis": {"price_mod": 10.0, "C_armor_mod": 2.4, "effect": "Magique & Intangible"},
-    "Obsidienne ou Bois d'Ebène": {"price_mod": 15.0, "C_armor_mod": 3.0, "effect": "Magique & Intangible"},
-    "Ebonite ou Bois de Corbeau": {"price_mod": 20.0, "C_armor_mod": 3.7, "effect": "Magique & Intangible"},
-    "Infernal ou Bois du Styx": {"price_mod": 50.0, "C_armor_mod": 4.5, "effect": "Magique & Intangible"},
-    "Auréalis ou Bois Céleste": {"price_mod": 100.0, "C_armor_mod": 5.0, "effect": "Magique & Intangible"}
+    "Or ou Coeur d'Ambre": {"price_mod": 5.0, "C_armor_mod": 1.5, "effect": "Magique & Intangible"},
+    "Mythril ou Bois de Lune": {"price_mod": 6.0, "C_armor_mod": 3.0, "effect": "Magique & Intangible"},
+    "Verre ou Bois de Vitréalis": {"price_mod": 10.0, "C_armor_mod": 4.0, "effect": "Magique & Intangible"},
+    "Obsidienne ou Bois d'Ebène": {"price_mod": 15.0, "C_armor_mod": 5.0, "effect": "Magique & Intangible"},
+    "Ebonite ou Bois de Corbeau": {"price_mod": 20.0, "C_armor_mod": 6.0, "effect": "Magique & Intangible"},
+    "Infernal ou Bois du Styx": {"price_mod": 50.0, "C_armor_mod": 7.0, "effect": "Magique & Intangible"},
+    "Auréalis ou Bois Céleste": {"price_mod": 100.0, "C_armor_mod": 9.0, "effect": "Magique & Intangible"}
 }
 
 qualities = {
@@ -50,8 +51,8 @@ base_prices = {
     "Casque": 100, "Plastron": 300, "Jambières": 200, "Gants": 160, "Bouclier": 40, "Grand bouclier": 60, "Bouclier bocle": 12,
     "Anneau": 100, "Amulette": 160, "Bracelet": 140,
     "Potion de soin": 5, "Poison mineur": 3,
-    "Boeuf": 1400, "Chat": 80, "Cheval d'attelage": 1200, "Cheval de guerre léger": 17200, "Cheval de selle": 5400,"Chèvre": 60, "Chien de chasse": 80, "Chien de guerre": 400, "Chien domestique": 60, "Chien ratier": 80, "Cochon": 140, "Cochon de lait": 80, "Destrier": 57100, "Faucon": 1100,
-    "Marteau de forgeron": 80, "Pelle": 40, "Pioche": 60
+    "Boeuf": 1400, "Chat": 80, "Cheval d'attelage": 1200, "Cheval de guerre léger": 17200, "Cheval de selle": 5400,"Chèvre": 60, "Chien de chasse": 80, "Chien de guerre": 400, "Chien domestique": 60, "Chien ratier": 80, "Cochon": 140, "Cochon de lait": 80, "Destrier": 57100, "Faucon": 1100, "Mouton": 1160, "Oie": 3, "Perroquet": 3500, "Pigeon voyageur": 1000, "Poulet": 1, "Sanglier (monture)": 1400, "Singe (petit)": 4240, "Taureau": 1600, "Vache": 1000, "Veau": 500,
+    "Bouilloire": 80, "Briquet": 40, "Jeu de carte": 60, "Marmite": 40, "Pair de dés": 10, "Tonneau 45L": 140, "Tonneau 162L": 200, "Chandelle 4h": 60, "Lanterne": 240, "Torche": 1,
 }
 
 ca_values = {"Casque": 20, "Plastron": 30, "Jambières": 20, "Gants": 20, "Bouclier": 20, "Grand bouclier": 30, "Bouclier bocle": 10}
